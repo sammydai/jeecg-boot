@@ -1,4 +1,6 @@
-import { getAction,deleteAction,putAction,postAction} from '@/api/manage'
+import { getAction, deleteAction, putAction, postAction, httpAction } from '@/api/manage'
+import Vue from 'vue'
+import {UI_CACHE_DB_DICT_DATA } from "@/store/mutation-types"
 
 ////根路径
 // const doMian = "/jeecg-boot/";
@@ -25,7 +27,7 @@ const frozenBatch = (params)=>putAction("/sys/user/frozenBatch",params);
 //验证用户是否存在
 const checkOnlyUser = (params)=>getAction("/sys/user/checkOnlyUser",params);
 //改变密码
-const changPassword = (params)=>putAction("/sys/user/changPassword",params);
+const changePassword = (params)=>putAction("/sys/user/changePassword",params);
 
 //权限管理
 const addPermission= (params)=>postAction("/sys/permission/add",params);
@@ -34,6 +36,7 @@ const getPermissionList = (params)=>getAction("/sys/permission/list",params);
 /*update_begin author:wuxianquan date:20190908 for:添加查询一级菜单和子菜单查询api */
 const getSystemMenuList = (params)=>getAction("/sys/permission/getSystemMenuList",params);
 const getSystemSubmenu = (params)=>getAction("/sys/permission/getSystemSubmenu",params);
+const getSystemSubmenuBatch = (params) => getAction('/sys/permission/getSystemSubmenuBatch', params)
 /*update_end author:wuxianquan date:20190908 for:添加查询一级菜单和子菜单查询api */
 
 // const deletePermission = (params)=>deleteAction("/sys/permission/delete",params);
@@ -56,6 +59,14 @@ const queryParentName   = (params)=>getAction("/sys/sysDepart/queryParentName",p
 const searchByKeywords   = (params)=>getAction("/sys/sysDepart/searchBy",params);
 const deleteByDepartId   = (params)=>deleteAction("/sys/sysDepart/delete",params);
 
+//二级部门管理
+const queryDepartPermission = (params)=>getAction("/sys/permission/queryDepartPermission",params);
+const saveDepartPermission = (params)=>postAction("/sys/permission/saveDepartPermission",params);
+const queryTreeListForDeptRole = (params)=>getAction("/sys/sysDepartPermission/queryTreeListForDeptRole",params);
+const queryDeptRolePermission = (params)=>getAction("/sys/sysDepartPermission/queryDeptRolePermission",params);
+const saveDeptRolePermission = (params)=>postAction("/sys/sysDepartPermission/saveDeptRolePermission",params);
+const queryMyDepartTreeList = (params)=>getAction("/sys/sysDepart/queryMyDeptTreeList",params);
+
 //日志管理
 //const getLogList = (params)=>getAction("/sys/log/list",params);
 const deleteLog = (params)=>deleteAction("/sys/log/delete",params);
@@ -75,6 +86,14 @@ const editDictItem = (params)=>putAction("/sys/dictItem/edit",params);
 
 //字典标签专用（通过code获取字典数组）
 export const ajaxGetDictItems = (code, params)=>getAction(`/sys/dict/getDictItems/${code}`,params);
+//从缓存中获取字典配置
+function getDictItemsFromCache(dictCode) {
+  if (Vue.ls.get(UI_CACHE_DB_DICT_DATA) && Vue.ls.get(UI_CACHE_DB_DICT_DATA)[dictCode]) {
+    let dictItems = Vue.ls.get(UI_CACHE_DB_DICT_DATA)[dictCode];
+    console.log("-----------getDictItemsFromCache----------dictCode="+dictCode+"---- dictItems=",dictItems)
+    return dictItems;
+  }
+}
 
 //系统通告
 const doReleaseData = (params)=>getAction("/sys/annountCement/doReleaseData",params);
@@ -89,11 +108,22 @@ const getVisitInfo = (params)=>getAction("/sys/visitInfo",params);
 const queryUserByDepId = (params)=>getAction("/sys/user/queryUserByDepId",params);
 
 // 查询用户角色表里的所有信息
-const queryUserRoleMap = (params)=>getAction("/sys/user/queryUserRoleMap",params);
+// const queryUserRoleMap = (params)=>getAction("/sys/user/queryUserRoleMap",params);
 // 重复校验
 const duplicateCheck = (params)=>getAction("/sys/duplicate/check",params);
 // 加载分类字典
 const loadCategoryData = (params)=>getAction("/sys/category/loadAllData",params);
+const checkRuleByCode = (params) => getAction('/sys/checkRule/checkByCode', params)
+//加载我的通告信息
+const getUserNoticeInfo= (params)=>getAction("/sys/sysAnnouncementSend/getMyAnnouncementSend",params);
+const getTransitURL = url => `/sys/common/transitRESTful?url=${encodeURIComponent(url)}`
+// 中转HTTP请求
+export const transitRESTful = {
+  get: (url, parameter) => getAction(getTransitURL(url), parameter),
+  post: (url, parameter) => postAction(getTransitURL(url), parameter),
+  put: (url, parameter) => putAction(getTransitURL(url), parameter),
+  http: (url, parameter) => httpAction(getTransitURL(url), parameter),
+}
 
 export {
   // imgView,
@@ -108,7 +138,7 @@ export {
   queryall,
   frozenBatch,
   checkOnlyUser,
-  changPassword,
+  changePassword,
   getPermissionList,
   addPermission,
   editPermission,
@@ -137,12 +167,21 @@ export {
   getLoginfo,
   getVisitInfo,
   queryUserByDepId,
-  queryUserRoleMap,
   duplicateCheck,
   queryTreeListForRole,
   getSystemMenuList,
   getSystemSubmenu,
-  loadCategoryData
+  getSystemSubmenuBatch,
+  loadCategoryData,
+  checkRuleByCode,
+  queryDepartPermission,
+  saveDepartPermission,
+  queryTreeListForDeptRole,
+  queryDeptRolePermission,
+  saveDeptRolePermission,
+  queryMyDepartTreeList,
+  getUserNoticeInfo,
+  getDictItemsFromCache
 }
 
 
